@@ -2,7 +2,7 @@ streamlit==1.43.2
 plotly==5.15.0
 pandas
 requests
-opencv-python
+opencv-python-headless
 numpy
 pdf2image
 pytesseract

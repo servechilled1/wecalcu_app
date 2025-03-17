@@ -1569,17 +1569,13 @@ def page_calculatie():
     st.markdown("## Overzicht per Posnummer")
     pos_summary = []
     for idx, comp in enumerate(cd["component_details"][:st.session_state.get("num_items", 1)], start=1):
-        base_net_cost = comp.get("net_cost_component", 0.0)
-        # Bepaal het aandeel van deze component in de totale nettokost
-        storage_share = (base_net_cost / cd["total_net_cost"]) * cd["storage_cost"] if cd["total_net_cost"] > 0 else 0
-        adjusted_net_cost = round(base_net_cost + storage_share, 2)
+        net_cost = round(comp.get("net_cost_component", 0.0), 2)
         if cd.get("total_internal_cost", 0) > 0:
-            margin_component = (cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) * (adjusted_net_cost / cd["total_internal_cost"])
+            margin_component = (cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) * (net_cost / cd["total_internal_cost"])
         else:
             margin_component = 0
-        selling_price_pos = round(adjusted_net_cost + margin_component, 2)
+        selling_price_pos = round(net_cost + margin_component, 2)
         selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
-
 
         pos_summary.append({
             "Posnummer": idx,

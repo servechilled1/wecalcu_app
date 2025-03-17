@@ -1399,6 +1399,94 @@ def page_budget_uren():
     comparison_df["Verschil (uur)"] = comparison_df["Scenario Budget Uren"] - comparison_df["Budget Uren"]
     st.dataframe(comparison_df.reset_index())
 
+def perform_calculations():
+    """
+    Bereken per component de netto kostprijs en tel daarna de opslag (storage) mee.
+    Voor elke component worden de kosten uit verschillende onderdelen opgeteld (indien aanwezig)
+    plus de reeds berekende budgetkosten. Het totaal van alle posnummers levert de 
+    totale nettokostprijs op, waarop vervolgens de opslagkosten (storage) worden berekend.
+    """
+    cd = st.session_state["calc_data"]
+    components = cd.get("component_details", [])
+    
+    # Bereken per component de netto kostprijs
+    for comp in components:
+        # Neem de verschillende kostenposten (als ze aanwezig zijn, anders 0)
+        material_cost      = comp.get("material_cost", 0.0)
+        profile_cost       = comp.get("profile_cost", 0.0)
+        treatment_cost     = comp.get("treatment_cost", 0.0)
+        special_items_cost = comp.get("special_items_cost", 0.0)
+        isolatie_cost      = comp.get("isolatie_cost", 0.0)
+        gaas_cost          = comp.get("gaas_cost", 0.0)
+        product_cost       = comp.get("product_cost", 0.0)
+        # De eerder berekende budgetkosten (bijv. op basis van uurloon en uren per stuk)
+        total_budget       = comp.get("total_budget", 0.0)
+        
+        net_cost = (material_cost + profile_cost + treatment_cost +
+                    special_items_cost + isolatie_cost + gaas_cost +
+                    product_cost + total_budget)
+        comp["net_cost_component"] = net_cost
+
+    # Totaal nettokostprijs over alle posnummers
+    total_net_cost = sum(comp.get("net_cost_component", 0.0) for comp in components)
+    cd["total_net_cost"] = total_net_cost
+    
+    # Bereken opslagkosten als percentage van de totale nettokostprijs
+    storage_percentage = cd.get("storage_percentage", 0.0)
+    storage_cost = total_net_cost * (storage_percentage / 100)
+    cd["storage_cost"] = storage_cost
+    
+    # Totale interne kosten = nettokostprijs + opslagkosten
+    total_internal_cost = total_net_cost + storage_cost
+    cd["total_internal_cost"] = total_internal_cost
+
+
+def finalize_calculations():
+    """
+    Bereken op basis van de totale interne kosten de uiteindelijke verkoopprijs.
+    Afhankelijk van het gekozen margetype (Winstmarge of Boekhoudelijke Marge)
+    wordt de verkoopprijs (excl. BTW) berekend. Hierna worden BTW en
+    de totale offerte verder berekend.
+    """
+    cd = st.session_state["calc_data"]
+    margin_percentage = cd.get("margin_percentage", 0.0)
+    marge_type = cd.get("marge_type", "Winstmarge (%)")
+    total_internal_cost = cd.get("total_internal_cost", 0.0)
+    
+    # Bereken de verkoopprijs (excl. BTW) op basis van het margetype
+    if marge_type == "Winstmarge (%)":
+        total_revenue_excl_vat = total_internal_cost * (1 + margin_percentage / 100)
+    elif marge_type == "Boekhoudelijke Marge (%)":
+        # Vermijd deling door nul; marge_percentage mag niet 100% of hoger zijn
+        if margin_percentage >= 100:
+            total_revenue_excl_vat = float('inf')
+        else:
+            total_revenue_excl_vat = total_internal_cost / (1 - margin_percentage / 100)
+    else:
+        total_revenue_excl_vat = total_internal_cost
+
+    cd["total_revenue_excl_vat"] = total_revenue_excl_vat
+    
+    # Stel dat het BTW-tarief 21% is
+    vat_rate = 0.21
+    vat_amount = total_revenue_excl_vat * vat_rate
+    cd["vat_amount"] = vat_amount
+    
+    total = total_revenue_excl_vat + vat_amount
+    cd["total"] = total
+    
+    # De winst is het verschil tussen de verkoopprijs (excl. BTW) en de interne kosten
+    total_profit = total_revenue_excl_vat - total_internal_cost
+    cd["total_profit"] = total_profit
+    
+    # Bereken de globale marge (als percentage van de verkoopprijs)
+    if total_revenue_excl_vat != 0:
+        global_margin = (total_profit / total_revenue_excl_vat) * 100
+    else:
+        global_margin = 0
+    cd["global_margin"] = global_margin
+
+
 def page_calculatie():
     cd = st.session_state["calc_data"]
     readonly = st.session_state.get("role", "viewer") not in ["admin", "editor"]
@@ -1794,6 +1882,7 @@ def page_calculatie():
                         prod["include_storage"] = st.checkbox("Opnemen in opslag", value=prod.get("include_storage", True), key=f"prod_storage_{i}_{j}", disabled=readonly)
             st.markdown("")
 
+    # Voer eerst de berekeningen uit (inclusief opslag) en daarna de afrondingen voor de uiteindelijke bedragen.
     perform_calculations()
     finalize_calculations()
     with st.expander("Totale Kosten"):

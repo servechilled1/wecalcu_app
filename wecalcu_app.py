@@ -1587,7 +1587,6 @@ def page_calculatie():
 
             tabs = st.tabs(["Platen", "Profielen", "Behandelingen", "Speciale Items", "Isolatie", "Gaas", "Producten"])
             
-            # (De overige invoer voor Platen, Profielen, etc. blijft ongewijzigd.)
             with tabs[0]:
                 st.markdown("#### Platen")
                 input_mode = st.radio("Kies invoermethode voor Platen", ["Handmatige invoer", "Kies uit database"], key=f"input_mode_platen_{i}")
@@ -1612,11 +1611,13 @@ def page_calculatie():
                     with col_plate_btns[0]:
                         if st.button("Voeg plaat toe", key=f"add_plate_{i}"):
                             comp.setdefault("plates", []).append({})
+                            st.experimental_rerun()
                     with col_plate_btns[1]:
                         if st.button("Verwijder laatste plaat", key=f"rem_plate_{i}"):
                             if comp.get("plates"):
                                 comp["plates"].pop()
                                 st.success("Laatst toegevoegde plaat verwijderd.")
+                                st.experimental_rerun()
                     for j, pl in enumerate(comp.get("plates", [])):
                         st.markdown(f"**Plaat {j+1}**")
                         cols_plate = st.columns(6)
@@ -1639,7 +1640,6 @@ def page_calculatie():
                         plate_area = (pl.get("length", 0) * pl.get("width", 0)) / 1e6 * pl.get("aantal", 1)
                         st.markdown(f"*Aantal: {pl.get('aantal', 1)} | Oppervlakte: {plate_area:.2f} m²*")
             
-            # (De overige tabs voor Profielen, Behandelingen, Speciale Items, Isolatie, Gaas en Producten blijven in grote lijnen hetzelfde.)
             with tabs[1]:
                 st.markdown("#### Profielen")
                 input_mode = st.radio("Kies invoermethode voor Profielen", ["Handmatige invoer", "Kies uit database"], key=f"input_mode_profielen_{i}")
@@ -1660,17 +1660,20 @@ def page_calculatie():
                     with col_prof_btns[0]:
                         if st.button("Voeg profiel toe", key=f"add_profile_{i}"):
                             comp.setdefault("profiles", []).append({})
+                            st.experimental_rerun()
                     with col_prof_btns[1]:
                         if st.button("Verwijder laatste profiel", key=f"rem_profile_{i}"):
                             if comp.get("profiles"):
                                 comp["profiles"].pop()
                                 st.success("Laatst toegevoegde profiel verwijderd.")
+                                st.experimental_rerun()
                     if not readonly:
                         extra_profile = st.selectbox("Selecteer profiel uit database", st.session_state["db_profiles"], key=f"db_profile_extra_{i}")
                         if extra_profile:
                             profile_data = get_full_profile(extra_profile)
                             if profile_data:
                                 comp.setdefault("profiles", []).append(profile_data)
+                                st.experimental_rerun()
                     for j, prof in enumerate(comp.get("profiles", [])):
                         st.markdown(f"**Profiel {j+1}**")
                         cols = st.columns(4)
@@ -1707,17 +1710,20 @@ def page_calculatie():
                     with col_treat_btns[0]:
                         if st.button("Voeg behandeling toe", key=f"add_treatment_{i}"):
                             comp.setdefault("treatments", []).append({})
+                            st.experimental_rerun()
                     with col_treat_btns[1]:
                         if st.button("Verwijder laatste behandeling", key=f"rem_treatment_{i}"):
                             if comp.get("treatments"):
                                 comp["treatments"].pop()
                                 st.success("Laatst toegevoegde behandeling verwijderd.")
+                                st.experimental_rerun()
                     if not readonly:
                         extra_treat = st.selectbox("Selecteer behandeling uit database", st.session_state["db_treatments"], key=f"db_treatment_extra_{i}")
                         if extra_treat:
                             treatment_data = get_full_treatment(extra_treat)
                             if treatment_data:
                                 comp.setdefault("treatments", []).append(treatment_data)
+                                st.experimental_rerun()
                     for j, treat in enumerate(comp.get("treatments", [])):
                         st.markdown(f"**Behandeling {j+1}**")
                         cols = st.columns(4)
@@ -1759,11 +1765,13 @@ def page_calculatie():
                     with col_spec_btns[0]:
                         if st.button("Voeg speciale item toe", key=f"add_special_{i}"):
                             comp.setdefault("special_items", []).append({})
+                            st.experimental_rerun()
                     with col_spec_btns[1]:
                         if st.button("Verwijder laatste speciale item", key=f"rem_special_{i}"):
                             if comp.get("special_items"):
                                 comp["special_items"].pop()
                                 st.success("Laatst toegevoegde speciale item verwijderd.")
+                                st.experimental_rerun()
                     for j, spec in enumerate(comp.get("special_items", [])):
                         st.markdown(f"**Special Item {j+1}**")
                         cols = st.columns(3)
@@ -1792,11 +1800,13 @@ def page_calculatie():
                     with col_iso_btns[0]:
                         if st.button("Voeg isolatie toe", key=f"add_isolatie_{i}"):
                             comp.setdefault("isolatie", []).append({})
+                            st.experimental_rerun()
                     with col_iso_btns[1]:
                         if st.button("Verwijder laatste isolatie", key=f"rem_isolatie_{i}"):
                             if comp.get("isolatie"):
                                 comp["isolatie"].pop()
                                 st.success("Laatst toegevoegde isolatie verwijderd.")
+                                st.experimental_rerun()
                     for j, iso in enumerate(comp.get("isolatie", [])):
                         st.markdown(f"**Isolatie {j+1}**")
                         cols = st.columns(3)
@@ -1825,11 +1835,13 @@ def page_calculatie():
                     with col_gaas_btns[0]:
                         if st.button("Voeg gaas toe", key=f"add_gaas_{i}"):
                             comp.setdefault("gaas", []).append({})
+                            st.experimental_rerun()
                     with col_gaas_btns[1]:
                         if st.button("Verwijder laatste gaas", key=f"rem_gaas_{i}"):
                             if comp.get("gaas"):
                                 comp["gaas"].pop()
                                 st.success("Laatst toegevoegde gaas verwijderd.")
+                                st.experimental_rerun()
                     for j, gaas in enumerate(comp.get("gaas", [])):
                         st.markdown(f"**Gaas {j+1}**")
                         cols = st.columns(3)
@@ -1862,11 +1874,13 @@ def page_calculatie():
                     with col_prod_btns[0]:
                         if st.button("Voeg product toe", key=f"add_product_{i}"):
                             comp.setdefault("producten", []).append({})
+                            st.experimental_rerun()
                     with col_prod_btns[1]:
                         if st.button("Verwijder laatste product", key=f"rem_product_{i}"):
                             if comp.get("producten"):
                                 comp["producten"].pop()
                                 st.success("Laatst toegevoegde product verwijderd.")
+                                st.experimental_rerun()
                             else:
                                 st.warning("Er zijn geen producten om te verwijderen.")
                     for j, prod in enumerate(comp.get("producten", [])):

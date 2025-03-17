@@ -214,7 +214,215 @@ def fetch_baseline_factors():
 
 # ----- Constante definities -----
 RAL_COLORS_HEX = {
-    # [... GROOT RAL-kleuroverzicht ongewijzigd ...]
+    # RAL 1000 - RAL 1037: Geel
+    "RAL 1000": "#CCC300",  # Green beige
+    "RAL 1001": "#D2B48C",  # Beige
+    "RAL 1002": "#C5A800",  # Sand yellow
+    "RAL 1003": "#FFC400",  # Signal yellow
+    "RAL 1004": "#E5E500",  # Golden yellow
+    "RAL 1005": "#B8B800",  # Honey yellow
+    "RAL 1006": "#FFD700",  # Maize yellow
+    "RAL 1007": "#E5E500",  # Daffodil yellow
+    "RAL 1011": "#B1A100",  # Brown beige
+    "RAL 1012": "#FFD700",  # Lemon yellow
+    "RAL 1013": "#EDE600",  # Oyster white
+    "RAL 1014": "#F7E500",  # Ivory
+    "RAL 1015": "#FFFF99",  # Light ivory
+    "RAL 1016": "#FFD700",  # Sulfur yellow
+    "RAL 1017": "#FFC400",  # Saffron yellow
+    "RAL 1018": "#FFDF00",  # Zinc yellow
+    "RAL 1019": "#B1A100",  # Grey beige
+    "RAL 1020": "#FFC400",  # Olive yellow
+    "RAL 1021": "#FFD700",  # Rape yellow
+    "RAL 1023": "#FFCC00",  # Traffic yellow
+    "RAL 1024": "#FFD700",  # Ochre yellow
+    "RAL 1026": "#FFAA00",  # Luminous yellow
+    "RAL 1027": "#FFB700",  # Curry
+    "RAL 1028": "#FFC400",  # Melon yellow
+
+    # RAL 2000 - RAL 2013: Oranje
+    "RAL 2000": "#FF4F00",  # Yellow orange
+    "RAL 2001": "#FF5F00",  # Red orange
+    "RAL 2002": "#FF8C00",  # Vermilion orange
+    "RAL 2003": "#FF5500",  # Pastel orange
+    "RAL 2004": "#FF8000",  # Pure orange
+    "RAL 2005": "#FF6F00",  # Luminous orange
+    "RAL 2007": "#FF5F00",  # Luminous bright orange
+    "RAL 2008": "#FF6F00",  # Bright red orange
+    "RAL 2009": "#FF7F00",  # Traffic orange
+    "RAL 2010": "#FF8000",  # Signal orange
+    "RAL 2011": "#FFB700",  # Deep orange
+    "RAL 2012": "#FFAB00",  # Salmon orange
+    "RAL 2013": "#FF8000",  # Pearl orange
+
+    # RAL 3000 - RAL 3031: Rood
+    "RAL 3000": "#8B0000",  # Flame red
+    "RAL 3001": "#800000",  # Signal red
+    "RAL 3002": "#C21807",  # Carmine red
+    "RAL 3003": "#B22222",  # Ruby red
+    "RAL 3004": "#8B0000",  # Purple red
+    "RAL 3005": "#6A0DAD",  # Wine red
+    "RAL 3007": "#660000",  # Black red
+    "RAL 3009": "#7F0000",  # Oxide red
+    "RAL 3011": "#8B0000",  # Nut brown
+    "RAL 3012": "#C04000",  # Beige red
+    "RAL 3013": "#FF2400",  # Tomato red
+    "RAL 3014": "#FF0000",  # Antique pink
+    "RAL 3015": "#FF4500",  # Light pink
+    "RAL 3016": "#FF0000",  # Coral red
+    "RAL 3017": "#FF6347",  # Rose
+    "RAL 3018": "#FF2400",  # Strawberry red
+    "RAL 3020": "#FF0000",  # Traffic red
+    "RAL 3022": "#FF0000",  # Salmon red
+    "RAL 3024": "#FF4500",  # Luminous red
+    "RAL 3026": "#FF0000",  # Luminous bright red
+    "RAL 3027": "#FF6347",  # Raspberry red
+    "RAL 3028": "#FF4500",  # Pure red
+
+    # RAL 4000 - RAL 4032: Paars
+    "RAL 4000": "#800080",  # Signal violet
+    "RAL 4001": "#8A2BE2",  # Red lilac
+    "RAL 4002": "#DA70D6",  # Red violet
+    "RAL 4003": "#C71585",  # Heather violet
+    "RAL 4004": "#4B0082",  # Bordeaux violet
+    "RAL 4005": "#8A2BE2",  # Blue lilac
+    "RAL 4006": "#9400D3",  # Traffic purple
+    "RAL 4007": "#6A5ACD",  # Purple violet
+    "RAL 4008": "#9932CC",  # Signal violet
+    "RAL 4009": "#9400D3",  # Pastel violet
+    "RAL 4010": "#BA55D3",  # Tele magenta
+    "RAL 4011": "#9932CC",  # Deep lilac
+    "RAL 4012": "#DA70D6",  # Pearl amethyst
+    "RAL 4013": "#BA55D3",  # Heather
+    "RAL 4014": "#D8BFD8",  # Parchment
+    "RAL 4015": "#9370DB",  # Light medium orchid
+    "RAL 4016": "#8A2BE2",  # Purple heliotrope
+    "RAL 4017": "#800080",  # Traffic violet
+    "RAL 4018": "#9400D3",  # Fern violet
+    "RAL 4019": "#8B008B",  # Pastel violet
+    "RAL 4020": "#DA70D6",  # Traffic magenta
+    "RAL 4022": "#BA55D3",  # Red violet
+    "RAL 4023": "#DDA0DD",  # Orchid pink
+    "RAL 4024": "#9400D3",  # Traffic violet
+
+    # RAL 5000 - RAL 5024: Blauw
+    "RAL 5000": "#000080",  # Violet blue
+    "RAL 5001": "#00008B",  # Green blue
+    "RAL 5002": "#0000CD",  # Ultramarine blue
+    "RAL 5003": "#0000FF",  # Sapphire blue
+    "RAL 5004": "#191970",  # Sapphire navy blue
+    "RAL 5005": "#0000CD",  # Signal blue
+    "RAL 5007": "#0000FF",  # Brilliant blue
+    "RAL 5008": "#1E90FF",  # Grey blue
+    "RAL 5009": "#4682B4",  # Azure blue
+    "RAL 5010": "#0000FF",  # Gentian blue
+    "RAL 5011": "#0000FF",  # Steel blue
+    "RAL 5012": "#6495ED",  # Light blue
+    "RAL 5013": "#0000CD",  # Cobalt blue
+    "RAL 5014": "#5F9EA0",  # Pigeon blue
+    "RAL 5015": "#87CEEB",  # Sky blue
+    "RAL 5017": "#6495ED",  # Traffic blue
+    "RAL 5018": "#00BFFF",  # Turquoise blue
+    "RAL 5019": "#00CED1",  # Capri blue
+    "RAL 5020": "#5F9EA0",  # Ocean blue
+    "RAL 5021": "#4682B4",  # Water blue
+    "RAL 5022": "#0000FF",  # Night blue
+    "RAL 5023": "#00008B",  # Distant blue
+    "RAL 5024": "#0000CD",  # Pastel blue
+
+    # RAL 6000 - RAL 6025: Groen
+    "RAL 6000": "#006400",  # Patina green
+    "RAL 6001": "#228B22",  # Emerald green
+    "RAL 6002": "#32CD32",  # Leaf green
+    "RAL 6003": "#008000",  # Olive green
+    "RAL 6004": "#006400",  # Blue green
+    "RAL 6005": "#2E8B57",  # Moss green
+    "RAL 6006": "#556B2F",  # Grey olive
+    "RAL 6007": "#006400",  # Bottle green
+    "RAL 6008": "#556B2F",  # Brown green
+    "RAL 6009": "#006400",  # Fir green
+    "RAL 6010": "#32CD32",  # Grass green
+    "RAL 6011": "#006400",  # Reseda green
+    "RAL 6012": "#7CFC00",  # Yellow green
+    "RAL 6013": "#7CFC00",  # Reed green
+    "RAL 6014": "#008000",  # Yellow olive
+    "RAL 6015": "#006400",  # Black olive
+    "RAL 6016": "#00FF00",  # Green leaf
+    "RAL 6017": "#006400",  # May green
+    "RAL 6018": "#7FFF00",  # Yellow green
+    "RAL 6019": "#006400",  # Pastel green
+    "RAL 6020": "#006400",  # Chrome green
+    "RAL 6021": "#00FF7F",  # Pale green
+    "RAL 6022": "#008000",  # Leaf green
+    "RAL 6024": "#00FF00",  # Traffic green
+    "RAL 6025": "#ADFF2F",  # Pine green
+
+    # RAL 7000 - RAL 7035: Grijs
+    "RAL 7000": "#808080",  # Metallic grey
+    "RAL 7001": "#D3D3D3",  # Silver grey
+    "RAL 7002": "#A9A9A9",  # Olive grey
+    "RAL 7003": "#696969",  # Moss grey
+    "RAL 7004": "#D3D3D3",  # Signal grey
+    "RAL 7005": "#A9A9A9",  # Mouse grey
+    "RAL 7006": "#808080",  # Granite grey
+    "RAL 7008": "#696969",  # Khaki grey
+    "RAL 7009": "#808080",  # Green grey
+    "RAL 7010": "#708090",  # Tarpaulin grey
+    "RAL 7011": "#A9A9A9",  # Iron grey
+    "RAL 7012": "#778899",  # Basalt grey
+    "RAL 7013": "#A9A9A9",  # Brown grey
+    "RAL 7015": "#808080",  # Slate grey
+    "RAL 7016": "#2F4F4F",  # Anthracite grey
+    "RAL 7021": "#2F4F4F",  # Black grey
+    "RAL 7022": "#708090",  # Umbra grey
+    "RAL 7023": "#778899",  # Concrete grey
+    "RAL 7024": "#A9A9A9",  # Graphite grey
+    "RAL 7026": "#808080",  # Granite grey
+    "RAL 7030": "#D3D3D3",  # Stone grey
+    "RAL 7031": "#A9A9A9",  # Blue grey
+    "RAL 7032": "#A9A9A9",  # Pebble grey
+    "RAL 7033": "#A9A9A9",  # Cement grey
+    "RAL 7034": "#A9A9A9",  # Yellow grey
+    "RAL 7035": "#D3D3D3",  # Light grey
+
+    # RAL 8000 - RAL 8025: Bruin
+    "RAL 8000": "#654321",  # Green brown
+    "RAL 8001": "#8B4513",  # Ochre brown
+    "RAL 8002": "#A0522D",  # Signal brown
+    "RAL 8003": "#8B4513",  # Clay brown
+    "RAL 8004": "#8B4513",  # Copper brown
+    "RAL 8007": "#A0522D",  # Fawn brown
+    "RAL 8008": "#A52A2A",  # Olive brown
+    "RAL 8011": "#8B4513",  # Nut brown
+    "RAL 8012": "#654321",  # Red brown
+    "RAL 8014": "#8B4513",  # Sepia brown
+    "RAL 8015": "#A0522D",  # Chestnut brown
+    "RAL 8016": "#8B4513",  # Mahogany brown
+    "RAL 8017": "#A52A2A",  # Chocolate brown
+    "RAL 8019": "#8B4513",  # Grey brown
+    "RAL 8022": "#A0522D",  # Black brown
+    "RAL 8023": "#A52A2A",  # Orange brown
+    "RAL 8024": "#A0522D",  # Beige brown
+    "RAL 8025": "#A52A2A",  # Pale brown
+
+    # RAL 9000 - RAL 9024: Wit
+    "RAL 9000": "#FFFFFF",  # Pure white
+    "RAL 9001": "#F5F5F5",  # Cream
+    "RAL 9002": "#D3D3D3",  # Grey white
+    "RAL 9003": "#FFFFFF",  # Signal white
+    "RAL 9004": "#000000",  # Signal black
+    "RAL 9005": "#000000",  # Jet black
+    "RAL 9006": "#D3D3D3",  # White aluminium
+    "RAL 9007": "#808080",  # Grey aluminium
+    "RAL 9008": "#000000",  # Jet black
+    "RAL 9010": "#FFFFFF",  # Pure white
+    "RAL 9011": "#000000",  # Graphite black
+    "RAL 9016": "#FFFFFF",  # Traffic white
+    "RAL 9017": "#000000",  # Traffic black
+    "RAL 9020": "#D3D3D3",  # Pearl grey
+    "RAL 9022": "#C0C0C0",  # Pearl silver
+    "RAL 9023": "#FF0000",  # Traffic red
+    "RAL 9024": "#FFFFFF",  # Pure white
 }
 
 DEFAULT_MATERIALS = CONFIG["DEFAULT_MATERIALS"]

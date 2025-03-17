@@ -1399,6 +1399,17 @@ def page_budget_uren():
     comparison_df["Verschil (uur)"] = comparison_df["Scenario Budget Uren"] - comparison_df["Budget Uren"]
     st.dataframe(comparison_df.reset_index())
 
+def remove_last_item(comp, list_key, success_msg):
+    """
+    Verwijdert het laatst toegevoegde item uit comp[list_key] als dit aanwezig is.
+    Verhoogt daarna een dummy teller in st.session_state zodat Streamlit de wijziging detecteert.
+    """
+    if comp.get(list_key):
+        comp[list_key].pop()
+        st.session_state["update_counter"] = st.session_state.get("update_counter", 0) + 1
+        st.success(success_msg)
+
+
 def perform_calculations():
     """
     Voor iedere component wordt eerst de netto kostprijs berekend (inclusief budgetkosten en andere kostenposten).
@@ -1453,7 +1464,6 @@ def finalize_calculations():
     if marge_type == "Winstmarge (%)":
         total_revenue_excl_vat = total_internal_cost * (1 + margin_percentage / 100)
     elif marge_type == "Boekhoudelijke Marge (%)":
-        # Vermijd deling door nul
         if margin_percentage >= 100:
             total_revenue_excl_vat = float('inf')
         else:
@@ -1503,16 +1513,16 @@ def page_calculatie():
     st.markdown("---")
 
     st.header("3. Invoeren Marge, Opslag, Uurloon en Kilometers")
-    default_marge_type = st.session_state["calc_data"].get("marge_type", "Winstmarge (%)")
+    default_marge_type = cd.get("marge_type", "Winstmarge (%)")
     default_index = 0 if default_marge_type == "Winstmarge (%)" else 1
 
     selected_marge = st.radio("Selecteer margetype (intern)",
-                            ["Winstmarge (%)", "Boekhoudelijke Marge (%)"],
-                            index=default_index,
-                            key="marge_type_radio",
-                            disabled=readonly,
-                            help="Bij 'Winstmarge (%)' wordt de verkoopprijs berekend als Kosten x (1 + marge/100). Bij 'Boekhoudelijke Marge (%)' wordt de verkoopprijs berekend als Kosten / (1 - marge/100).")
-    st.session_state["calc_data"]["marge_type"] = selected_marge
+                               ["Winstmarge (%)", "Boekhoudelijke Marge (%)"],
+                               index=default_index,
+                               key="marge_type_radio",
+                               disabled=readonly,
+                               help="Bij 'Winstmarge (%)' wordt de verkoopprijs berekend als Kosten x (1 + marge/100). Bij 'Boekhoudelijke Marge (%)' wordt de verkoopprijs berekend als Kosten / (1 - marge/100).")
+    cd["marge_type"] = selected_marge
     col_margin, col_opslag, col_uurloon = st.columns(3)
     with col_margin:
         cd["margin_percentage"] = st.number_input("Margin (%) (intern)", min_value=0.0, max_value=100.0,
@@ -1521,9 +1531,9 @@ def page_calculatie():
                                                   help="Geef de marge in procenten op.")
     with col_opslag:
         cd["storage_percentage"] = st.number_input("Opslag (%)", min_value=0.0, max_value=100.0,
-                                                    value=float(cd.get("storage_percentage", 10.0)), step=1.0,
-                                                    key="opslag", format="%.2f", disabled=readonly,
-                                                    help="Opslagpercentage toegepast op de nettokosten.")
+                                                   value=float(cd.get("storage_percentage", 10.0)), step=1.0,
+                                                   key="opslag", format="%.2f", disabled=readonly,
+                                                   help="Opslagpercentage toegepast op de nettokosten.")
     with col_uurloon:
         cd["uurloon"] = st.number_input("Uurloon (EUR):", min_value=0.0,
                                         value=float(cd.get("uurloon", 0.0)), step=0.10,
@@ -1549,16 +1559,16 @@ def page_calculatie():
                                  value=st.session_state.get("num_items", 1), step=1,
                                  key="num_items_input", disabled=readonly)
     st.session_state["num_items"] = num_items
-    comps = st.session_state["calc_data"]["component_details"]
+    comps = cd.get("component_details", [])
     while len(comps) < num_items:
         comps.append({})
     if len(comps) > num_items:
-        st.session_state["calc_data"]["component_details"] = comps[:num_items]
-    all_materials = {**st.session_state["database_materials"], **DEFAULT_MATERIALS}
+        cd["component_details"] = comps[:num_items]
+    all_materials = {**st.session_state.get("database_materials", {}), **DEFAULT_MATERIALS}
     materiaal_options = list(all_materials.keys())
     
     for i in range(num_items):
-        comp = st.session_state["calc_data"]["component_details"][i]
+        comp = cd["component_details"][i]
         with st.expander(f"Posnummer {i+1} Invoer", expanded=False):
             st.markdown(f"### Algemene gegevens voor Posnummer {i+1}")
             col1, col2 = st.columns(2)
@@ -1611,13 +1621,9 @@ def page_calculatie():
                     with col_plate_btns[0]:
                         if st.button("Voeg plaat toe", key=f"add_plate_{i}"):
                             comp.setdefault("plates", []).append({})
-                            st.experimental_rerun()
                     with col_plate_btns[1]:
-                        if st.button("Verwijder laatste plaat", key=f"rem_plate_{i}"):
-                            if comp.get("plates"):
-                                comp["plates"].pop()
-                                st.success("Laatst toegevoegde plaat verwijderd.")
-                                st.experimental_rerun()
+                        st.button("Verwijder laatste plaat", key=f"rem_plate_{i}",
+                                  on_click=remove_last_item, args=(comp, "plates", "Laatst toegevoegde plaat verwijderd."))
                     for j, pl in enumerate(comp.get("plates", [])):
                         st.markdown(f"**Plaat {j+1}**")
                         cols_plate = st.columns(6)
@@ -1644,7 +1650,7 @@ def page_calculatie():
                 st.markdown("#### Profielen")
                 input_mode = st.radio("Kies invoermethode voor Profielen", ["Handmatige invoer", "Kies uit database"], key=f"input_mode_profielen_{i}")
                 if input_mode == "Kies uit database":
-                    dbprofiles = st.session_state["db_profiles"]
+                    dbprofiles = st.session_state.get("db_profiles", [])
                     if dbprofiles:
                         selected_profile = st.selectbox("Selecteer een profiel", dbprofiles, key=f"db_profile_select_{i}")
                         profile_data = get_full_profile(selected_profile)
@@ -1660,20 +1666,15 @@ def page_calculatie():
                     with col_prof_btns[0]:
                         if st.button("Voeg profiel toe", key=f"add_profile_{i}"):
                             comp.setdefault("profiles", []).append({})
-                            st.experimental_rerun()
                     with col_prof_btns[1]:
-                        if st.button("Verwijder laatste profiel", key=f"rem_profile_{i}"):
-                            if comp.get("profiles"):
-                                comp["profiles"].pop()
-                                st.success("Laatst toegevoegde profiel verwijderd.")
-                                st.experimental_rerun()
+                        st.button("Verwijder laatste profiel", key=f"rem_profile_{i}",
+                                  on_click=remove_last_item, args=(comp, "profiles", "Laatst toegevoegde profiel verwijderd."))
                     if not readonly:
-                        extra_profile = st.selectbox("Selecteer profiel uit database", st.session_state["db_profiles"], key=f"db_profile_extra_{i}")
+                        extra_profile = st.selectbox("Selecteer profiel uit database", st.session_state.get("db_profiles", []), key=f"db_profile_extra_{i}")
                         if extra_profile:
                             profile_data = get_full_profile(extra_profile)
                             if profile_data:
                                 comp.setdefault("profiles", []).append(profile_data)
-                                st.experimental_rerun()
                     for j, prof in enumerate(comp.get("profiles", [])):
                         st.markdown(f"**Profiel {j+1}**")
                         cols = st.columns(4)
@@ -1694,7 +1695,7 @@ def page_calculatie():
                 st.markdown("#### Behandelingen")
                 input_mode = st.radio("Kies invoermethode voor Behandelingen", ["Handmatige invoer", "Kies uit database"], key=f"input_mode_behandelingen_{i}")
                 if input_mode == "Kies uit database":
-                    db_treatments = st.session_state["db_treatments"]
+                    db_treatments = st.session_state.get("db_treatments", [])
                     if db_treatments:
                         selected_treatment = st.selectbox("Selecteer een behandeling", db_treatments, key=f"db_treatment_select_{i}")
                         treatment_data = get_full_treatment(selected_treatment)
@@ -1710,20 +1711,15 @@ def page_calculatie():
                     with col_treat_btns[0]:
                         if st.button("Voeg behandeling toe", key=f"add_treatment_{i}"):
                             comp.setdefault("treatments", []).append({})
-                            st.experimental_rerun()
                     with col_treat_btns[1]:
-                        if st.button("Verwijder laatste behandeling", key=f"rem_treatment_{i}"):
-                            if comp.get("treatments"):
-                                comp["treatments"].pop()
-                                st.success("Laatst toegevoegde behandeling verwijderd.")
-                                st.experimental_rerun()
+                        st.button("Verwijder laatste behandeling", key=f"rem_treatment_{i}",
+                                  on_click=remove_last_item, args=(comp, "treatments", "Laatst toegevoegde behandeling verwijderd."))
                     if not readonly:
-                        extra_treat = st.selectbox("Selecteer behandeling uit database", st.session_state["db_treatments"], key=f"db_treatment_extra_{i}")
+                        extra_treat = st.selectbox("Selecteer behandeling uit database", st.session_state.get("db_treatments", []), key=f"db_treatment_extra_{i}")
                         if extra_treat:
                             treatment_data = get_full_treatment(extra_treat)
                             if treatment_data:
                                 comp.setdefault("treatments", []).append(treatment_data)
-                                st.experimental_rerun()
                     for j, treat in enumerate(comp.get("treatments", [])):
                         st.markdown(f"**Behandeling {j+1}**")
                         cols = st.columns(4)
@@ -1765,13 +1761,9 @@ def page_calculatie():
                     with col_spec_btns[0]:
                         if st.button("Voeg speciale item toe", key=f"add_special_{i}"):
                             comp.setdefault("special_items", []).append({})
-                            st.experimental_rerun()
                     with col_spec_btns[1]:
-                        if st.button("Verwijder laatste speciale item", key=f"rem_special_{i}"):
-                            if comp.get("special_items"):
-                                comp["special_items"].pop()
-                                st.success("Laatst toegevoegde speciale item verwijderd.")
-                                st.experimental_rerun()
+                        st.button("Verwijder laatste speciale item", key=f"rem_special_{i}",
+                                  on_click=remove_last_item, args=(comp, "special_items", "Laatst toegevoegde speciale item verwijderd."))
                     for j, spec in enumerate(comp.get("special_items", [])):
                         st.markdown(f"**Special Item {j+1}**")
                         cols = st.columns(3)
@@ -1800,13 +1792,9 @@ def page_calculatie():
                     with col_iso_btns[0]:
                         if st.button("Voeg isolatie toe", key=f"add_isolatie_{i}"):
                             comp.setdefault("isolatie", []).append({})
-                            st.experimental_rerun()
                     with col_iso_btns[1]:
-                        if st.button("Verwijder laatste isolatie", key=f"rem_isolatie_{i}"):
-                            if comp.get("isolatie"):
-                                comp["isolatie"].pop()
-                                st.success("Laatst toegevoegde isolatie verwijderd.")
-                                st.experimental_rerun()
+                        st.button("Verwijder laatste isolatie", key=f"rem_isolatie_{i}",
+                                  on_click=remove_last_item, args=(comp, "isolatie", "Laatst toegevoegde isolatie verwijderd."))
                     for j, iso in enumerate(comp.get("isolatie", [])):
                         st.markdown(f"**Isolatie {j+1}**")
                         cols = st.columns(3)
@@ -1835,13 +1823,9 @@ def page_calculatie():
                     with col_gaas_btns[0]:
                         if st.button("Voeg gaas toe", key=f"add_gaas_{i}"):
                             comp.setdefault("gaas", []).append({})
-                            st.experimental_rerun()
                     with col_gaas_btns[1]:
-                        if st.button("Verwijder laatste gaas", key=f"rem_gaas_{i}"):
-                            if comp.get("gaas"):
-                                comp["gaas"].pop()
-                                st.success("Laatst toegevoegde gaas verwijderd.")
-                                st.experimental_rerun()
+                        st.button("Verwijder laatste gaas", key=f"rem_gaas_{i}",
+                                  on_click=remove_last_item, args=(comp, "gaas", "Laatst toegevoegde gaas verwijderd."))
                     for j, gaas in enumerate(comp.get("gaas", [])):
                         st.markdown(f"**Gaas {j+1}**")
                         cols = st.columns(3)
@@ -1853,10 +1837,10 @@ def page_calculatie():
                 st.markdown("#### Producten")
                 input_mode = st.radio("Kies invoermethode voor Producten", ["Handmatige invoer", "Kies uit database"], key=f"input_mode_producten_{i}")
                 if input_mode == "Kies uit database":
-                    db_products = list(st.session_state["database_products"].keys())
+                    db_products = list(st.session_state.get("database_products", {}).keys())
                     if db_products:
                         selected_product = st.selectbox("Selecteer een product", db_products, key=f"db_product_select_{i}")
-                        product_data = st.session_state["database_products"].get(selected_product, {})
+                        product_data = st.session_state.get("database_products", {}).get(selected_product, {})
                         if product_data:
                             if not comp.get("producten"):
                                 comp.setdefault("producten", []).append({})
@@ -1874,15 +1858,9 @@ def page_calculatie():
                     with col_prod_btns[0]:
                         if st.button("Voeg product toe", key=f"add_product_{i}"):
                             comp.setdefault("producten", []).append({})
-                            st.experimental_rerun()
                     with col_prod_btns[1]:
-                        if st.button("Verwijder laatste product", key=f"rem_product_{i}"):
-                            if comp.get("producten"):
-                                comp["producten"].pop()
-                                st.success("Laatst toegevoegde product verwijderd.")
-                                st.experimental_rerun()
-                            else:
-                                st.warning("Er zijn geen producten om te verwijderen.")
+                        st.button("Verwijder laatste product", key=f"rem_product_{i}",
+                                  on_click=remove_last_item, args=(comp, "producten", "Laatst toegevoegde product verwijderd."))
                     for j, prod in enumerate(comp.get("producten", [])):
                         st.markdown(f"**Product {j+1}**")
                         cols = st.columns(3)
@@ -1892,7 +1870,7 @@ def page_calculatie():
                         prod["include_storage"] = st.checkbox("Opnemen in opslag", value=prod.get("include_storage", True), key=f"prod_storage_{i}_{j}", disabled=readonly)
             st.markdown("")
 
-    # Eerst de globale berekeningen uitvoeren
+    # Voer eerst de globale berekeningen uit
     perform_calculations()
     finalize_calculations()
     
@@ -1931,7 +1909,7 @@ def page_calculatie():
     st.markdown("## Overzicht per Posnummer")
     
     pos_summary = []
-    for idx, comp in enumerate(cd["component_details"][:st.session_state.get("num_items", 1)], start=1):
+    for idx, comp in enumerate(cd.get("component_details", [])[:st.session_state.get("num_items", 1)], start=1):
         net_cost = comp.get("net_cost_component", 0.0)
         # Bereken de interne kost per component (met opslag)
         internal_cost = net_cost * (1 + cd.get("storage_percentage", 0.0) / 100)
@@ -1941,7 +1919,6 @@ def page_calculatie():
             selling_price_pos = internal_cost / (1 - cd.get("margin_percentage", 0.0) / 100)
         selling_price_pos = round(selling_price_pos, 2)
         selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
-        # Bereken de marge in percentage voor het posnummer
         if selling_price_pos:
             pos_margin_percentage = round((selling_price_pos - internal_cost) / selling_price_pos * 100, 2)
         else:

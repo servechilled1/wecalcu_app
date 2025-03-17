@@ -1636,17 +1636,14 @@ def page_offerte():
     
     rows = []
     for idx, comp in enumerate(cd.get("component_details", []), start=1):
-        base_net_cost = comp.get("net_cost_component", 0.0)
-        storage_share = (base_net_cost / cd["total_net_cost"]) * cd["storage_cost"] if cd["total_net_cost"] > 0 else 0
-        adjusted_net_cost = round(base_net_cost + storage_share, 2)
         if cd.get("total_internal_cost", 0) > 0:
             margin_component = ((cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) *
-                                (adjusted_net_cost / cd["total_internal_cost"]))
+                                (comp.get("net_cost_component", 0.0) / cd["total_internal_cost"]))
         else:
             margin_component = 0
-        selling_price_pos = round(adjusted_net_cost + margin_component, 2)
+        selling_price_pos = round(comp.get("net_cost_component", 0.0) + margin_component, 2)
         selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
-        
+            
         if comp.get("treatments"):
             treatments_list = []
             for t in comp.get("treatments", []):

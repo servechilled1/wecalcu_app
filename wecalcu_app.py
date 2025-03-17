@@ -1568,14 +1568,14 @@ def page_calculatie():
     st.markdown("________________________________________")
     st.markdown("## Overzicht per Posnummer")
     pos_summary = []
-    for idx, comp in enumerate(cd["component_details"][:st.session_state.get("num_items", 1)], start=1):
-        net_cost = round(comp.get("net_cost_component", 0.0), 2)
-        if cd.get("total_internal_cost", 0) > 0:
-            margin_component = (cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) * (net_cost / cd["total_internal_cost"])
-        else:
-            margin_component = 0
-        selling_price_pos = round(net_cost + margin_component, 2)
-        selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
+        for idx, comp in enumerate(cd["component_details"][:st.session_state.get("num_items", 1)], start=1):
+            net_cost = round(comp.get("net_cost_component", 0.0), 2)
+            if cd.get("total_internal_cost", 0) > 0:
+                margin_component = (cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) * (net_cost / cd["total_internal_cost"])
+            else:
+                margin_component = 0
+            selling_price_pos = round(net_cost + margin_component, 2)
+            selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
 
         pos_summary.append({
             "Posnummer": idx,
@@ -1631,15 +1631,15 @@ def page_offerte():
     default_ral = "RAL 9024"
     
     rows = []
-    for idx, comp in enumerate(cd.get("component_details", []), start=1):
-        if cd.get("total_internal_cost", 0) > 0:
-            margin_component = ((cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) *
-                                (comp.get("net_cost_component", 0.0) / cd["total_internal_cost"]))
-        else:
-            margin_component = 0
-        selling_price_pos = round(comp.get("net_cost_component", 0.0) + margin_component, 2)
-        selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
-            
+        for idx, comp in enumerate(cd.get("component_details", []), start=1):
+            if cd.get("total_internal_cost", 0) > 0:
+                margin_component = ((cd["total_revenue_excl_vat"] - cd["total_internal_cost"]) *
+                                    (comp.get("net_cost_component", 0.0) / cd["total_internal_cost"]))
+            else:
+                margin_component = 0
+            selling_price_pos = round(comp.get("net_cost_component", 0.0) + margin_component, 2)
+            selling_price_per_stuk = round(selling_price_pos / comp.get("quantity", 1), 2)
+                
         if comp.get("treatments"):
             treatments_list = []
             for t in comp.get("treatments", []):
